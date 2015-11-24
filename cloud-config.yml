@@ -1,0 +1,38 @@
+#cloud-config
+
+---
+coreos:
+  etcd2:
+    # Generate a new discovery URL here - change the size to
+    # meet your needs: https://discovery.etcd.io/new?size=1
+    discovery: DISCOVERY_URL_GOES_HERE
+    advertise-client-urls: http://$public_ipv4:2379
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+    listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
+  fleet:
+    public-ip: $public_ipv4
+  flannel:
+    interface: $public_ipv4
+  units:
+  - name: etcd2.service
+    command: start
+  - name: fleet.service
+    command: start
+  - name: flanneld.service
+    drop-ins:
+    - name: 50-network-config.conf
+      content: |
+        [Service]
+        ExecStartPre=/usr/bin/etcdctl set /coreos.com/network/config '{ "Network": "10.1.0.0/16" }'
+    command: start
+  - name: mars.service
+    command: start
+    content: |
+      [Unit]
+      Description=Application container
+
+      [Service]
+      ExecStart=/usr/bin/rkt --insecure-skip-verify run --mds-register=false https://github.com/leyra/mars/raw/master/images/server-0.0.1-linux-amd64.aci
+      KillMode=mixed
+      Restart=always
