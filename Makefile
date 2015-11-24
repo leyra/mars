@@ -36,7 +36,7 @@ acbuild: leyra
 	mv server-linux-amd64 /tmp/acbuild/rootfs/bin/server-linux-amd64
 	mkdir /tmp/acbuild/rootfs/app
 	cp -R ./* /tmp/acbuild/rootfs/app
-	cp .env /tmp/acbuild/rootfs/app/.env
+	cp /tmp/acbuild/rootfs/app/env.example /tmp/acbuild/rootfs/app/.env
 	mv /tmp/acbuild .
 	cd acbuild && tar czf server-${VERSION}-linux-amd64.tar.gz manifest rootfs
 	mv acbuild/server-${VERSION}-linux-amd64.tar.gz images/server-${VERSION}-linux-amd64.aci
